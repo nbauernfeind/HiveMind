@@ -1,1 +1,7 @@
 Java visualization package to help you introspect your ant's hive mind.
+
+To package jar for use in your own personal ant project run this:
+./sbt package
+
+To package up a sources jar run this:
+./sbt package-src

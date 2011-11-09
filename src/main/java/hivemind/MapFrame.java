@@ -1,3 +1,5 @@
+package hivemind;
+
 import javax.swing.JFrame;
 import java.awt.Color;
 import java.awt.Graphics;
