@@ -8,15 +8,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 
 public class MapFrame extends JFrame {
-    private final static int POINT_OFFSET_X = 10;
-    private final static int POINT_OFFSET_Y = 30;
-    private final static int POINTS_PER_TILE = 8;
+    final static int POINT_OFFSET_X = 10;
+    final static int POINT_OFFSET_Y = 30;
+    final static int POINTS_PER_TILE = 8;
 
     private final String mapFilename;
     private final MapFrameListener mapFrameListener;
@@ -29,9 +25,9 @@ public class MapFrame extends JFrame {
     Location endTile = null;
 
     public MapFrame(String mapFilename, MapFrameListener listener) {
-        this.mapFrameListener = listener;
         this.mapFilename = mapFilename;
-        this.tiles = loadMap(mapFilename);
+        this.mapFrameListener = listener;
+        this.tiles = MapLoader.loadMap(mapFilename);
 
         rows = tiles.length;
         cols = tiles[0].length;
@@ -176,96 +172,6 @@ public class MapFrame extends JFrame {
 
     public int getCols() {
         return cols;
-    }
-
-    protected TileType[][] loadMap(String fileName) {
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(fileName));
-            String line;
-            int rows = -1, cols = -1;
-            TileType[][] array = null;
-
-            int r = 0;
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith("m ")) {
-                    line = line.substring(2);
-                    char[] chars = line.toCharArray();
-                    for (int i = 0; i < chars.length; i++) {
-                        char c = chars[i];
-                        if (c == '%') {
-                            array[r][i] = TileType.WATER;
-                        } else {
-                            array[r][i] = TileType.GROUND;
-                        }
-                    }
-                    r++;
-                } else if (line.startsWith("rows ")) {
-                    rows = Integer.parseInt(line.substring(5));
-                } else if (line.startsWith("cols ")) {
-                    cols = Integer.parseInt(line.substring(5));
-                } else if (line.startsWith("players ")) {
-                    if (rows > 0 && cols > 0) {
-                        array = new TileType[rows][cols];
-                    } else {
-                        System.out.println("Invalid map file");
-                        break;
-                    }
-                }
-            }
-            return array;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    public static enum TileType {
-        WATER, GROUND, PATH, EXPLORED, ANT, HILL
-
-    }
-
-    public static class Location {
-        final double x;
-        final double y;
-        final int row;
-        final int col;
-
-        Location(double x, double y) {
-            this.x = x;
-            this.y = y;
-            row = (int) Math.floor((y - POINT_OFFSET_Y) / POINTS_PER_TILE);
-            col = (int) Math.floor((x - POINT_OFFSET_X) / POINTS_PER_TILE);
-        }
-
-        Location(int row, int col) {
-            this.row = row;
-            this.col = col;
-            x = POINT_OFFSET_X + col * POINTS_PER_TILE;
-            y = POINT_OFFSET_Y + row * POINTS_PER_TILE;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            Location location = (Location) o;
-            return !(col != location.col || row != location.row);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = row;
-            result = 31 * result + col;
-            return result;
-        }
     }
 
     public static interface MapFrameListener {
