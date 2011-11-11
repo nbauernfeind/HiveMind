@@ -2,20 +2,23 @@ package hivemind.ants
 
 import io.Source
 import util.matching.Regex
+import java.io.BufferedWriter
 
 object Parser {
 
-  def parse(source: Source, params: GameParameters = GameParameters(), knownWater: Map[Tile, Water] = Map.empty) = {
-    val lines = source.getLines
+  def parse(writer: BufferedWriter, source: Source, params: GameParameters = GameParameters(), knownWater: Map[Tile, Water] = Map.empty) = {
+    val lines = source.getLines()
 
     def parseInternal(state: GameInProgress): Game = {
-      val line = lines.next.trim
+      val line = lines.next().trim
+      writer.write(line + "\n")
+
       line match {
         case "" => parseInternal(state)
         case "go" | "ready" => state
         case "end" => GameOver(turn = state.turn, parameters = state.parameters, board = state.board)
         case _ => {
-          regularExpressions.find{case(regex, _) => line.matches(regex.toString)}.map{case(regex, f) =>
+          regularExpressions.find{case(regex, _) => line.matches(regex.toString())}.map{case(regex, f) =>
             val regex(value) = line
             val values = value.split(" ").map(_.toInt)
             parseInternal(f(state, values))
