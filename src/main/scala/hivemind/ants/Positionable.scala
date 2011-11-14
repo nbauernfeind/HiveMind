@@ -7,7 +7,7 @@ sealed trait Positionable {
 }
 
 case class MyAnt(tile: Tile) extends Positionable
-case class EnemyAnt(tile: Tile) extends Positionable
+case class EnemyAnt(tile: Tile, player: Int) extends Positionable
 case class Corpse(tile: Tile) extends Positionable
 case class Food(tile: Tile) extends Positionable
 case class Water(tile: Tile) extends Positionable

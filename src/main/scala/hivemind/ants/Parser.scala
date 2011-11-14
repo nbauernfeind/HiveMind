@@ -12,6 +12,7 @@ object Parser {
     def parseInternal(state: GameInProgress): Game = {
       val line = lines.next().trim
       writer.write(line + "\n")
+      writer.flush()
 
       line match {
         case "" => parseInternal(state)
@@ -33,7 +34,7 @@ object Parser {
   // The sequence of these is important. The parser will invoke the first that matches.
   private val regularExpressions: List[(Regex, (GameInProgress, Seq[Int]) => GameInProgress)] =
     ("a (\\d+ \\d+) 0".r, (game: GameInProgress, values: Seq[Int]) => game including MyAnt(tileFrom(values))) ::
-    ("a (\\d+ \\d+ \\d+)".r, (game: GameInProgress, values: Seq[Int]) => game including EnemyAnt(tileFrom(values))) ::
+    ("a (\\d+ \\d+ \\d+)".r, (game: GameInProgress, values: Seq[Int]) => game including EnemyAnt(tileFrom(values), values(2))) ::
     ("w (\\d+ \\d+)".r, (game: GameInProgress, values: Seq[Int]) => game including Water(tileFrom(values))) ::
     ("f (\\d+ \\d+)".r, (game: GameInProgress, values: Seq[Int]) => game including Food(tileFrom(values))) ::
     ("d (\\d+ \\d+ \\d+)".r, (game: GameInProgress, values: Seq[Int]) => game including Corpse(tileFrom(values))) ::
