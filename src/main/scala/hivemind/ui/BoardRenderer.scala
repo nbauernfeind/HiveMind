@@ -12,7 +12,7 @@ class BoardRenderer(scale: Int) extends Renderer[Game] {
 
   def draw(t: Game, g: Graphics2D) {
     drawGrid(t, g)
-    drawWater(t.board.water.keys, g)
+    drawTiles(t.board.water.keys, Color.BLUE, g)
     drawAnts(t.board.myAnts.keys, Color.WHITE, g)
     t.board.enemyAnts.values.groupBy(_.player).foreach {
       case (player, ants) => drawAnts(ants.map(_.tile), EnemyColours(player), g)
@@ -43,8 +43,8 @@ class BoardRenderer(scale: Int) extends Renderer[Game] {
     }
   }
 
-  private def drawWater(ws: Iterable[Tile], g: Graphics2D) {
-    g.setColor(Color.blue)
+  private def drawTiles(ws: Iterable[Tile], c: Color, g: Graphics2D) {
+    g.setColor(c)
     for (w <- ws) {
       val p = Point(w.column, w.row) * scale
       val r = new Rectangle2D.Double(p.x + 1, p.y + 1, scale - 2, scale - 2)

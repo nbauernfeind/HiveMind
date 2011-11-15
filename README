@@ -1,7 +1,51 @@
 Java visualization package to help you introspect your ant's hive mind.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 To package jar for use in your own personal ant project run this:
 ./sbt package
 
 To package up a sources jar run this:
 ./sbt package-src
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Getting started using the Scala Starter-Kit:
+
+object DebugBot extends App {
+  val pipeIn = new PipedInputStream()
+  val pipeOut = new PipedOutputStream(pipeIn)
+  val hiveMind = new HiveMind(System.in, pipeOut)
+  new Thread(new Runnable() {
+    def run() {
+      hiveMind.run()
+    }
+  }).start()
+
+  new AntsGame(pipeIn).run(new MyBot())
+}
+
+Now simply run DebugBot in lieu of MyBot. You will need to include the HiveMind jar in your classpath.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Getting started using Java
+
+You should be able to do the same thing as the Scala kit (Lasantha, you should give your example here). You will however need to include either scala_library.jar in addition to HiveMind.jar or else run your java program in scala.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Ideas in the making:
+- Register callbacks with HiveMind to get back data from MyBot at the end of each round.
+- Each callback explains how to visualize itself.
+- Visualize HeatMaps
+- Visualize Tile Sets (think explored vs unexplored vs tiles along some 'main' path.)
+- Visualize Rectangles
+- Visualize FoW
+- Make it obvious which tiles your ants have not yet seen at all.
+- Remember Hills and draw them closed once detected as being closed.
+- Allow end-user to evaluate each type of visualization one at a time.
+- Show real value on mouse hover.
+
+And much much more =).
+
