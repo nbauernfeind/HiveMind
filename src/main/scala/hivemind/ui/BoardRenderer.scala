@@ -7,16 +7,26 @@ import java.util.Collections
 import scala.collection.JavaConversions._
 
 class BoardRenderer(scale: Int) extends Renderer[Game] {
-  val EnemyColours: Array[Color] = Array(Color.RED, Color.CYAN, Color.YELLOW, Color.PINK, Color.ORANGE, Color.GREEN, Color.MAGENTA)
-  Collections.shuffle(java.util.Arrays.asList(EnemyColours: _*))
+  val EnemyColours = java.util.Arrays.asList(Color.RED, Color.CYAN, Color.YELLOW, Color.PINK, Color.ORANGE, Color.GREEN, Color.MAGENTA)
+  Collections.shuffle(EnemyColours)
 
   def draw(t: Game, g: Graphics2D) {
     drawGrid(t, g)
     drawTiles(t.board.water.keys, Color.BLUE, g)
-    drawAnts(t.board.myAnts.keys, Color.WHITE, g)
-    t.board.enemyAnts.values.groupBy(_.player).foreach {
-      case (player, ants) => drawAnts(ants.map(_.tile), EnemyColours(player), g)
+
+    // Draw Hills
+    drawTiles(t.board.myHills.keys, Color.WHITE, g, border = true)
+    t.board.enemyHills.values.groupBy(_.player).foreach {
+      case (player, hills) => drawTiles(hills.map(_.tile), EnemyColours(player), g, border = true)
     }
+
+    // Draw Ants Last
+    drawCircles(t.board.myAnts.keys, Color.WHITE, g)
+    t.board.enemyAnts.values.groupBy(_.player).foreach {
+      case (player, ants) => drawCircles(ants.map(_.tile), EnemyColours(player), g)
+    }
+
+    // Draw Fog of War
   }
 
   private def drawGrid(t: Game, g: Graphics2D) {
@@ -43,17 +53,27 @@ class BoardRenderer(scale: Int) extends Renderer[Game] {
     }
   }
 
-  private def drawTiles(ws: Iterable[Tile], c: Color, g: Graphics2D) {
-    g.setColor(c)
+  private def drawTiles(ws: Iterable[Tile], c: Color, g: Graphics2D, border: Boolean = false) {
+    if (border) g.setColor(Color.BLACK) else g.setColor(c)
     for (w <- ws) {
       val p = Point(w.column, w.row) * scale
       val r = new Rectangle2D.Double(p.x + 1, p.y + 1, scale - 2, scale - 2)
       g.draw(r)
       g.fill(r)
     }
+
+    if (border) {
+      g.setColor(c)
+      for (w <- ws) {
+        val p = Point(w.column, w.row) * scale
+        val r = new Rectangle2D.Double(p.x + 2, p.y + 2, scale - 4, scale - 4)
+        g.draw(r)
+        g.fill(r)
+      }
+    }
   }
 
-  private def drawAnts(as: Iterable[Tile], c: Color, g: Graphics2D) {
+  private def drawCircles(as: Iterable[Tile], c: Color, g: Graphics2D) {
     for (a <- as) {
       val p = Point(a.column, a.row) * scale
       g.setColor(c)

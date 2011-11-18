@@ -20,7 +20,7 @@ class HiveMind(in: InputStream = System.in, out: OutputStream = System.out) exte
   def run() {
     try {
       def playNextTurn(game: Game) {
-        val newGameState = Parser.parse(writer, source, game.parameters, game.board.water)
+        val newGameState = Parser.parse(writer, source, game.parameters, game.board.water, game.board.myHills, game.board.enemyHills)
         updateBoard(newGameState)
         if (newGameState.gameOver) Unit
         else {
@@ -64,6 +64,7 @@ class Frame(scale: Int, initialBoard: Game) extends JFrame {
     }
 
     def keyTyped(p1: KeyEvent) {}
+
     def keyReleased(p1: KeyEvent) {}
   })
 
@@ -72,7 +73,7 @@ class Frame(scale: Int, initialBoard: Game) extends JFrame {
   addMouseMotionListener(new MouseMotionListener() {
     def mouseDragged(p1: MouseEvent) {
       if (mouseClickedInBar) {
-        val t = (p1.getX * (currBoard.size-1)) / (columns * scale + 1)
+        val t = (p1.getX * (currBoard.size - 1)) / (columns * scale + 1)
         if (t >= 0 && t < currBoard.size) {
           currIndex = t
           repaint()
@@ -84,10 +85,10 @@ class Frame(scale: Int, initialBoard: Game) extends JFrame {
   })
 
   addMouseListener(new MouseListener() {
-    def mouseClicked(p1: MouseEvent) {
+    def mousePressed(p1: MouseEvent) {
       if (p1.getY >= 0 && p1.getY < turnHeight) {
-	mouseClickedInBar = true
-        val t = (p1.getX * (currBoard.size-1)) / (columns * scale + 1)
+        mouseClickedInBar = true
+        val t = (p1.getX * (currBoard.size - 1)) / (columns * scale + 1)
         if (t >= 0 && t < currBoard.size) {
           currIndex = t
           repaint()
@@ -96,11 +97,13 @@ class Frame(scale: Int, initialBoard: Game) extends JFrame {
     }
 
     def mouseReleased(p1: MouseEvent) {
-	mouseClickedInBar = false
+      mouseClickedInBar = false
     }
 
-    def mousePressed(p1: MouseEvent) {}
+    def mouseClicked(p1: MouseEvent) {}
+
     def mouseEntered(p1: MouseEvent) {}
+
     def mouseExited(p1: MouseEvent) {}
   })
 

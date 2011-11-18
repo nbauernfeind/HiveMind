@@ -6,7 +6,11 @@ import java.io.BufferedWriter
 
 object Parser {
 
-  def parse(writer: BufferedWriter, source: Source, params: GameParameters = GameParameters(), knownWater: Map[Tile, Water] = Map.empty) = {
+  def parse(writer: BufferedWriter, source: Source, params: GameParameters = GameParameters(),
+            knownWater: Map[Tile, Water] = Map.empty,
+            myKnownHills: Map[Tile, MyHill] = Map.empty,
+            knownEnemyHills: Map[Tile, EnemyHill] = Map.empty) = {
+
     val lines = source.getLines()
 
     def parseInternal(state: GameInProgress): Game = {
@@ -28,7 +32,7 @@ object Parser {
       }
     }
 
-    parseInternal(GameInProgress(parameters = params, board = Board(water = knownWater)))
+    parseInternal(GameInProgress(parameters = params, board = Board(water = knownWater, myHills = myKnownHills, enemyHills = knownEnemyHills)))
   }
 
   // The sequence of these is important. The parser will invoke the first that matches.
@@ -39,7 +43,7 @@ object Parser {
     ("f (\\d+ \\d+)".r, (game: GameInProgress, values: Seq[Int]) => game including Food(tileFrom(values))) ::
     ("d (\\d+ \\d+ \\d+)".r, (game: GameInProgress, values: Seq[Int]) => game including Corpse(tileFrom(values))) ::
     ("h (\\d+ \\d+) 0".r, (game: GameInProgress, values: Seq[Int]) => game including MyHill(tileFrom(values))) ::
-    ("h (\\d+ \\d+ \\d+)".r, (game: GameInProgress, values: Seq[Int]) => game including EnemyHill(tileFrom(values))) ::
+    ("h (\\d+ \\d+ \\d+)".r, (game: GameInProgress, values: Seq[Int]) => game including EnemyHill(tileFrom(values), values(2))) ::
     ("turn (\\d+)".r, (game: GameInProgress, values: Seq[Int]) => game.copy(turn = values(0))) ::
     ("loadtime (\\d+)".r, (game: GameInProgress, values: Seq[Int]) => game.copy(parameters = game.parameters.copy(loadTime = values(0)))) ::
     ("turntime (\\d+)".r, (game: GameInProgress, values: Seq[Int]) => game.copy(parameters = game.parameters.copy(turnTime = values(0)))) ::
