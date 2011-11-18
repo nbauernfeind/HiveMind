@@ -2,9 +2,8 @@ package hivemind.ui
 
 import hivemind.ants.{Tile, Game}
 import java.awt.geom.{Rectangle2D, Line2D}
-import java.awt.{Color, Graphics2D}
 import java.util.Collections
-import scala.collection.JavaConversions._
+import java.awt.{AlphaComposite, Color, Graphics2D}
 
 class BoardRenderer(scale: Int) extends Renderer[Game] {
   val EnemyColours = java.util.Arrays.asList(Color.RED, Color.CYAN, Color.YELLOW, Color.PINK, Color.ORANGE, Color.GREEN, Color.MAGENTA)
@@ -17,16 +16,41 @@ class BoardRenderer(scale: Int) extends Renderer[Game] {
     // Draw Hills
     drawTiles(t.board.myHills.keys, Color.WHITE, g, border = true)
     t.board.enemyHills.values.groupBy(_.player).foreach {
-      case (player, hills) => drawTiles(hills.map(_.tile), EnemyColours(player), g, border = true)
+      case (player, hills) => drawTiles(hills.map(_.tile), EnemyColours.get(player), g, border = true)
     }
+
+    // Draw Food
+    drawTiles(t.board.food.keys, new Color(0xCC9966), g, border = true)
 
     // Draw Ants Last
     drawCircles(t.board.myAnts.keys, Color.WHITE, g)
     t.board.enemyAnts.values.groupBy(_.player).foreach {
-      case (player, ants) => drawCircles(ants.map(_.tile), EnemyColours(player), g)
+      case (player, ants) => drawCircles(ants.map(_.tile), EnemyColours.get(player), g)
     }
 
     // Draw Fog of War
+    g.setColor(Color.BLACK)
+    g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f))
+    for (j <- 0 to t.parameters.rows) {
+      var start = 0
+      for (i <- 0 to t.parameters.columns) {
+        val tile = Tile(i,j)
+        val visible = t.board.myAnts.values.find(_.tile.distanceTo(tile) <= t.parameters.viewRadius).isDefined
+        if (visible) {
+          if (i - start > 0) {
+            val p = Point(start, j) * scale
+            val r = new Rectangle2D.Double(p.x,p.y,scale*(i-start),scale)
+            g.fill(r)
+          }
+          start = i + 1
+        }
+      }
+      if (start < t.parameters.columns + 1) {
+        val p = Point(start, j) * scale
+        val r = new Rectangle2D.Double(p.x,p.y,scale*(t.parameters.columns + 1 - start),scale)
+        g.fill(r)
+      }
+    }
   }
 
   private def drawGrid(t: Game, g: Graphics2D) {
@@ -53,22 +77,17 @@ class BoardRenderer(scale: Int) extends Renderer[Game] {
     }
   }
 
-  private def drawTiles(ws: Iterable[Tile], c: Color, g: Graphics2D, border: Boolean = false) {
-    if (border) g.setColor(Color.BLACK) else g.setColor(c)
+  private def drawTiles(ws: Iterable[Tile], c: Color, g: Graphics2D, border: Boolean = false, alpha: Double = 1.0) {
+    g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha.floatValue))
+
     for (w <- ws) {
       val p = Point(w.column, w.row) * scale
       val r = new Rectangle2D.Double(p.x + 1, p.y + 1, scale - 2, scale - 2)
-      g.draw(r)
-      g.fill(r)
-    }
-
-    if (border) {
       g.setColor(c)
-      for (w <- ws) {
-        val p = Point(w.column, w.row) * scale
-        val r = new Rectangle2D.Double(p.x + 2, p.y + 2, scale - 4, scale - 4)
+      g.fill(r)
+      if (border) {
+        g.setColor(Color.BLACK)
         g.draw(r)
-        g.fill(r)
       }
     }
   }
